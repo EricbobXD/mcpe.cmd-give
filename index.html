@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>/Give指令生成器</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 30px;
+      background-image: url('https://wallpapercave.com/dwp2x/wp6632107.png');
+      background-size: cover;
+      background-repeat: no-repeat;
+    }
+    .container {
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 30px;
+      border-radius: 15px;
+      margin-top: 50px;
+      width: 100%;
+      max-width: 500px;
+    }
+    h1, h2 {
+      text-align: center;
+    }
+    form {
+      width: 100%;
+    }
+    label {
+      font-weight: bold;
+      display: inline-block;
+      width: 100px;
+    }
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    input[type="submit"] {
+      background-color: #4CAF50;
+      color: #fff;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+    }
+    input[type="submit"]:hover {
+      background-color: #45a049;
+    }
+    #generated_command {
+      font-size: 16px;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+    .form-group {
+      display: flex;
+      align-items: center;
+    }
+    .form-group label {
+      margin-right: 10px;
+    }
+    .checkbox-label {
+      display: inline-block;
+      margin-left: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>/Give指令生成器</h1>
+    <form>
+      <div class="form-group">
+        <label for="target_selector">目標選擇器：</label>
+        <select id="target_selector" name="target_selector">
+          <option value="@a">所有玩家 (@a)</option>
+          <option value="@p">最近的玩家 (@p)</option>
+          <option value="@r">隨機玩家 (@r)</option>
+          <option value="@s">自己 (@s)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="item_id">物品ID：</label>
+        <input type="text" id="item_id" name="item_id" required>
+      </div>
+      <div class="form-group">
+        <label for="quantity">數量：</label>
+        <input type="number" id="quantity" name="quantity" min="1" max="32767" value="1">
+      </div>
+      <div class="form-group">
+        <label for="data_value">Data值：</label>
+        <input type="text" id="data_value" name="data_value" placeholder="">
+      </div>
+      <div id="can_place_on_input" class="form-group hidden">
+        <label for="can_place_on">可放置於：</label>
+        <input type="text" id="can_place_on" name="can_place_on" placeholder="Block ID 1,Block ID 2,...">
+      </div>
+      <div id="can_destroy_input" class="form-group hidden">
+        <label for="can_destroy">可破壞：</label>
+        <input type="text" id="can_destroy" name="can_destroy" placeholder="Block ID 1,Block ID 2,...">
+      </div>
+      <div id="item_lock_mode_input" class="form-group">
+        <label for="item_lock_mode">物品鎖定模式：</label>
+        <select id="item_lock_mode" name="item_lock_mode">
+          <option value=""></option>
+          <option value="lock_in_inventory">Lock in Inventory</option>
+          <option value="lock_in_slot">Lock in Slot</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="keep_on_death">死亡時保留：</label>
+        <select id="keep_on_death" name="keep_on_death">
+          <option value=""></option>
+          <option value="true">是</option>
+          <option value="false">否</option>
+        </select>
+      </div>
+      <input type="submit" value="生成Give指令">
+    </form>
+
+    <h2>生成的Give指令：</h2>
+    <p id="generated_command"></p>
+  </div>
+
+  <script>
+    const form = document.querySelector('form');
+    const generatedCommand = document.getElementById('generated_command');
+
+    form.addEventListener('submit', function(event) {
+      event.preventDefault();
+      const targetSelector = document.getElementById('target_selector').value;
+      const itemID = document.getElementById('item_id').value;
+      const quantity = document.getElementById('quantity').value;
+      const dataValue = document.getElementById('data_value').value;
+      const canPlaceOn = document.getElementById('can_place_on').value.trim().split(',');
+      const canDestroy = document.getElementById('can_destroy').value.trim().split(',');
+      const itemLockMode = document.getElementById('item_lock_mode').value;
+      const keepOnDeath = document.getElementById('keep_on_death').value;
+
+      // 根据组件生成Give指令
+      let components = '';
+      if (canPlaceOn[0]) {
+        const canPlaceOnComponent = `"minecraft:can_place_on": { "blocks": [${canPlaceOn.map(block => `"${block.trim()}"`).join(', ')}] }`;
+        components += `{${canPlaceOnComponent}}, `;
+      }
+      if (canDestroy[0]) {
+        const canDestroyComponent = `"minecraft:can_destroy": { "blocks": [${canDestroy.map(block => `"${block.trim()}"`).join(', ')}] }`;
+        components += `{${canDestroyComponent}}, `;
+      }
+      if (itemLockMode) {
+        const itemLockComponent = `"minecraft:item_lock": { "mode": "${itemLockMode}" }`;
+        components += `{${itemLockComponent}}, `;
+      }
+      if (keepOnDeath) {
+        const keepOnDeathComponent = `"minecraft:keep_on_death": {}`;
+        components += `{${keepOnDeathComponent}}, `;
+      }
+      components = components.slice(0, -2);
+
+      let giveCommand = `/give ${targetSelector} ${itemID} ${quantity}`;
+      if (dataValue) {
+        giveCommand += ` ${dataValue}`;
+      }
+      if (components) {
+        giveCommand += ` {${components}}`;
+      }
+      generatedCommand.textContent = giveCommand;
+    });
+  </script>
+</body>
+</html>
