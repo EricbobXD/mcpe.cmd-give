@@ -8,37 +8,49 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin: 30px;
-      background-image: url('https://wallpapercave.com/dwp2x/wp6632107.png');
-      background-size: cover;
-      background-repeat: no-repeat;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background: linear-gradient(to right, #ece9e6, #ffffff);
     }
     .container {
-      background-color: rgba(255, 255, 255, 0.8);
+      background-color: rgba(255, 255, 255, 0.9);
       padding: 30px;
       border-radius: 15px;
       margin-top: 50px;
-      width: 100%;
+      width: 90%;
       max-width: 500px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      animation: fadeIn 1s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
     h1, h2 {
       text-align: center;
+      color: #333;
     }
     form {
       width: 100%;
     }
     label {
       font-weight: bold;
-      display: inline-block;
-      width: 100px;
+      display: block;
+      margin-bottom: 5px;
+      color: #555;
     }
     input, select {
       width: 100%;
-      padding: 8px;
-      margin-bottom: 10px;
+      padding: 10px;
+      margin-bottom: 15px;
       border: 1px solid #ccc;
       border-radius: 4px;
-      font-size: 14px;
+      font-size: 16px;
+      transition: border-color 0.3s;
+    }
+    input:focus, select:focus {
+      border-color: #4CAF50;
     }
     input[type="submit"] {
       background-color: #4CAF50;
@@ -46,6 +58,9 @@
       cursor: pointer;
       width: 100%;
       margin-top: 10px;
+      font-size: 18px;
+      border: none;
+      transition: background-color 0.3s;
     }
     input[type="submit"]:hover {
       background-color: #45a049;
@@ -54,13 +69,10 @@
       font-size: 16px;
       font-weight: bold;
       margin-top: 20px;
+      word-break: break-all;
     }
     .form-group {
-      display: flex;
-      align-items: center;
-    }
-    .form-group label {
-      margin-right: 10px;
+      margin-bottom: 15px;
     }
     .checkbox-label {
       display: inline-block;
@@ -93,15 +105,15 @@
         <label for="data_value">Data值：</label>
         <input type="text" id="data_value" name="data_value" placeholder="">
       </div>
-      <div id="can_place_on_input" class="form-group hidden">
+      <div class="form-group">
         <label for="can_place_on">可放置於：</label>
         <input type="text" id="can_place_on" name="can_place_on" placeholder="Block ID 1,Block ID 2,...">
       </div>
-      <div id="can_destroy_input" class="form-group hidden">
+      <div class="form-group">
         <label for="can_destroy">可破壞：</label>
         <input type="text" id="can_destroy" name="can_destroy" placeholder="Block ID 1,Block ID 2,...">
       </div>
-      <div id="item_lock_mode_input" class="form-group">
+      <div class="form-group">
         <label for="item_lock_mode">物品鎖定模式：</label>
         <select id="item_lock_mode" name="item_lock_mode">
           <option value=""></option>
@@ -134,37 +146,32 @@
       const itemID = document.getElementById('item_id').value;
       const quantity = document.getElementById('quantity').value;
       const dataValue = document.getElementById('data_value').value;
-      const canPlaceOn = document.getElementById('can_place_on').value.trim().split(',');
-      const canDestroy = document.getElementById('can_destroy').value.trim().split(',');
+      const canPlaceOn = document.getElementById('can_place_on').value.trim().split(',').filter(Boolean);
+      const canDestroy = document.getElementById('can_destroy').value.trim().split(',').filter(Boolean);
       const itemLockMode = document.getElementById('item_lock_mode').value;
       const keepOnDeath = document.getElementById('keep_on_death').value;
 
       // 根据组件生成Give指令
-      let components = '';
-      if (canPlaceOn[0]) {
-        const canPlaceOnComponent = `"minecraft:can_place_on": { "blocks": [${canPlaceOn.map(block => `"${block.trim()}"`).join(', ')}] }`;
-        components += `{${canPlaceOnComponent}}, `;
+      let components = [];
+      if (canPlaceOn.length) {
+        components.push(`"minecraft:can_place_on": { "blocks": [${canPlaceOn.map(block => `"${block.trim()}"`).join(', ')}] }`);
       }
-      if (canDestroy[0]) {
-        const canDestroyComponent = `"minecraft:can_destroy": { "blocks": [${canDestroy.map(block => `"${block.trim()}"`).join(', ')}] }`;
-        components += `{${canDestroyComponent}}, `;
+      if (canDestroy.length) {
+        components.push(`"minecraft:can_destroy": { "blocks": [${canDestroy.map(block => `"${block.trim()}"`).join(', ')}] }`);
       }
       if (itemLockMode) {
-        const itemLockComponent = `"minecraft:item_lock": { "mode": "${itemLockMode}" }`;
-        components += `{${itemLockComponent}}, `;
+        components.push(`"minecraft:item_lock": { "mode": "${itemLockMode}" }`);
       }
       if (keepOnDeath) {
-        const keepOnDeathComponent = `"minecraft:keep_on_death": {}`;
-        components += `{${keepOnDeathComponent}}, `;
+        components.push(`"minecraft:keep_on_death": {}`);
       }
-      components = components.slice(0, -2);
 
       let giveCommand = `/give ${targetSelector} ${itemID} ${quantity}`;
       if (dataValue) {
         giveCommand += ` ${dataValue}`;
       }
-      if (components) {
-        giveCommand += ` {${components}}`;
+      if (components.length) {
+        giveCommand += ` {${components.join(', ')}}`;
       }
       generatedCommand.textContent = giveCommand;
     });
