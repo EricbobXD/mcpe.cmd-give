@@ -5,7 +5,7 @@
   <style>
     body {
       font-family: 'Arial', sans-serif;
-      background: #f0f4f8;
+      background: #e9ecef;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -14,22 +14,24 @@
     }
     .container {
       background-color: #ffffff;
-      padding: 40px;
+      padding: 30px;
       border-radius: 10px;
       box-shadow: 0 0 15px rgba(0,0,0,0.1);
-      max-width: 600px;
+      max-width: 1000px;
       width: 100%;
       box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
     }
     h1 {
-      font-size: 28px;
+      font-size: 26px;
       color: #333;
       text-align: center;
-      margin-bottom: 30px;
     }
     form {
       display: grid;
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
       gap: 15px;
     }
     .form-group {
@@ -42,7 +44,7 @@
       margin-bottom: 5px;
     }
     input, select {
-      padding: 12px;
+      padding: 10px;
       border: 1px solid #ddd;
       border-radius: 5px;
       font-size: 16px;
@@ -59,10 +61,10 @@
       border: none;
       cursor: pointer;
       padding: 15px;
-      font-size: 18px;
+      font-size: 16px;
       border-radius: 5px;
       transition: background-color 0.3s;
-      margin-top: 10px;
+      grid-column: span 2;
     }
     input[type="submit"]:hover {
       background-color: #0056b3;
@@ -72,12 +74,15 @@
       border: 1px solid #ddd;
       border-radius: 5px;
       padding: 15px;
-      margin-top: 30px;
+      margin-top: 20px;
       word-break: break-word;
-      cursor: pointer;
       position: relative;
+      cursor: not-allowed;
     }
-    .generated-command::after {
+    .generated-command.copyable {
+      cursor: pointer;
+    }
+    .generated-command.copyable::after {
       content: 'Copy';
       position: absolute;
       right: 15px;
@@ -86,7 +91,7 @@
       color: #007BFF;
       cursor: pointer;
     }
-    .generated-command:hover::after {
+    .generated-command.copyable:hover::after {
       color: #0056b3;
     }
   </style>
@@ -143,7 +148,7 @@
       <input type="submit" value="生成Give指令">
     </form>
 
-    <div id="generated_command" class="generated-command" onclick="copyCommand()">
+    <div id="generated_command" class="generated-command">
       <p id="command_text">生成的Give指令將顯示在這裡</p>
     </div>
   </div>
@@ -187,16 +192,19 @@
         giveCommand += ` {${components.join(', ')}}`;
       }
       commandText.textContent = giveCommand;
+      generatedCommand.classList.add('copyable');
     });
 
-    function copyCommand() {
-      const command = commandText.textContent;
-      navigator.clipboard.writeText(command).then(() => {
-        alert('指令已複製到剪貼板!');
-      }).catch(err => {
-        console.error('複製失敗:', err);
-      });
-    }
+    generatedCommand.addEventListener('click', function() {
+      if (generatedCommand.classList.contains('copyable')) {
+        const command = commandText.textContent;
+        navigator.clipboard.writeText(command).then(() => {
+          alert('指令已複製到剪貼板!');
+        }).catch(err => {
+          console.error('複製失敗:', err);
+        });
+      }
+    });
   </script>
 </body>
 </html>
