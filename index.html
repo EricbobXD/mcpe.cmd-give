@@ -70,6 +70,20 @@
     input[type="submit"]:hover {
       background-color: #0056b3;
     }
+    input[type="button"] {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      cursor: pointer;
+      padding: 15px;
+      font-size: 16px;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+      grid-column: span 2;
+    }
+    input[type="button"]:hover {
+      background-color: #c82333;
+    }
     .generated-command {
       background-color: #f7f9fc;
       border: 1px solid #ddd;
@@ -147,6 +161,7 @@
         </select>
       </div>
       <input type="submit" value="生成Give指令">
+      <input type="button" id="clear_command" value="清除Give指令">
     </form>
 
     <div id="generated_command" class="generated-command">
@@ -154,59 +169,64 @@
     </div>
   </div>
 
-<script>
-  const form = document.querySelector('form');
-  const commandText = document.getElementById('command_text');
-  const generatedCommand = document.getElementById('generated_command');
+  <script>
+    const form = document.querySelector('form');
+    const commandText = document.getElementById('command_text');
+    const generatedCommand = document.getElementById('generated_command');
+    const clearButton = document.getElementById('clear_command');
 
-  form.addEventListener('submit', function(event) {
-    event.preventDefault();
-    const targetSelector = document.getElementById('target_selector').value;
-    const itemID = document.getElementById('item_id').value;
-    const quantity = document.getElementById('quantity').value;
-    const dataValue = document.getElementById('data_value').value;
-    const canPlaceOn = document.getElementById('can_place_on').value.trim().split(',').map(block => `"${block.trim()}"`).filter(Boolean);
-    const canDestroy = document.getElementById('can_destroy').value.trim().split(',').map(block => `"${block.trim()}"`).filter(Boolean);
-    const itemLockMode = document.getElementById('item_lock_mode').value;
-    const keepOnDeath = document.getElementById('keep_on_death').value;
+    form.addEventListener('submit', function(event) {
+      event.preventDefault();
+      const targetSelector = document.getElementById('target_selector').value;
+      const itemID = document.getElementById('item_id').value;
+      const quantity = document.getElementById('quantity').value;
+      const dataValue = document.getElementById('data_value').value;
+      const canPlaceOn = document.getElementById('can_place_on').value.trim().split(',').map(block => `"${block.trim()}"`).filter(Boolean);
+      const canDestroy = document.getElementById('can_destroy').value.trim().split(',').map(block => `"${block.trim()}"`).filter(Boolean);
+      const itemLockMode = document.getElementById('item_lock_mode').value;
+      const keepOnDeath = document.getElementById('keep_on_death').value;
 
-    // Generate components for the Give command
-    let components = [];
-    if (canPlaceOn.length) {
-      components.push(`"minecraft:can_place_on": { "blocks": [${canPlaceOn.join(', ')}] }`);
-    }
-    if (canDestroy.length) {
-      components.push(`"minecraft:can_destroy": { "blocks": [${canDestroy.join(', ')}] }`);
-    }
-    if (itemLockMode) {
-      components.push(`"minecraft:item_lock": { "mode": "${itemLockMode}" }`);
-    }
-    if (keepOnDeath) {
-      components.push(`"minecraft:keep_on_death": {}`);
-    }
+      // Generate components for the Give command
+      let components = [];
+      if (canPlaceOn.length) {
+        components.push(`"minecraft:can_place_on": { "blocks": [${canPlaceOn.join(', ')}] }`);
+      }
+      if (canDestroy.length) {
+        components.push(`"minecraft:can_destroy": { "blocks": [${canDestroy.join(', ')}] }`);
+      }
+      if (itemLockMode) {
+        components.push(`"minecraft:item_lock": { "mode": "${itemLockMode}" }`);
+      }
+      if (keepOnDeath) {
+        components.push(`"minecraft:keep_on_death": {}`);
+      }
 
-    let giveCommand = `/give ${targetSelector} ${itemID} ${quantity}`;
-    if (dataValue) {
-      giveCommand += ` ${dataValue}`;
-    }
-    if (components.length) {
-      giveCommand += ` {${components.join(', ')}}`;
-    }
-    commandText.textContent = giveCommand;
-    generatedCommand.classList.add('copyable');
-  });
+      let giveCommand = `/give ${targetSelector} ${itemID} ${quantity}`;
+      if (dataValue) {
+        giveCommand += ` ${dataValue}`;
+      }
+      if (components.length) {
+        giveCommand += ` {${components.join(', ')}}`;
+      }
+      commandText.textContent = giveCommand;
+      generatedCommand.classList.add('copyable');
+    });
 
-  generatedCommand.addEventListener('click', function() {
-    if (generatedCommand.classList.contains('copyable')) {
-      const command = commandText.textContent;
-      navigator.clipboard.writeText(command).then(() => {
-        alert('指令已複製到剪貼板!');
-      }).catch(err => {
-        console.error('複製失敗:', err);
-      });
-    }
-  });
-</script>
+    generatedCommand.addEventListener('click', function() {
+      if (generatedCommand.classList.contains('copyable')) {
+        const command = commandText.textContent;
+        navigator.clipboard.writeText(command).then(() => {
+          alert('指令已複製到剪貼板!');
+        }).catch(err => {
+          console.error('複製失敗:', err);
+        });
+      }
+    });
 
+    clearButton.addEventListener('click', function() {
+      commandText.textContent = '生成的Give指令將顯示在這裡';
+      generatedCommand.classList.remove('copyable');
+    });
+  </script>
 </body>
 </html>
