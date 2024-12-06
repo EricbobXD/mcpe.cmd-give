@@ -21,3 +21,7 @@
 8. 是否啟用死亡時保留(可選)
 9. 點擊 **生成** 按鈕
 10. 點擊代碼，即可 **複製並使用**。
+
+## License
+This project is licensed under the Apache License 2.0. See the [LICENSE](./LICENSE) file for details.
+
